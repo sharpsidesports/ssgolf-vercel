@@ -1,3 +1,4 @@
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuthContext } from '../../context/AuthContext';
 
@@ -6,7 +7,7 @@ interface BlurredPreviewProps {
   requiredSubscription?: 'free' | 'basic' | 'pro';
 }
 
-const BlurredPreview: React.FC<BlurredPreviewProps> = ({ children, requiredSubscription = 'free' }) => {
+export default function BlurredPreview({ children, requiredSubscription = 'free' }: BlurredPreviewProps) {
   const { user } = useAuthContext();
   const userTier = user?.subscription_tier || 'free';
   const subscriptionLevels = { free: 0, basic: 1, pro: 2 };
@@ -27,14 +28,12 @@ const BlurredPreview: React.FC<BlurredPreviewProps> = ({ children, requiredSubsc
           <p className="text-sm text-gray-600 mb-3">
             Choose a plan that fits your needs and get access to all our professional golf analysis tools.
           </p>
-          <a
-            href="https://www.winible.com/checkout/1378395472007287051?pid=1378395472019869964"
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            to="/subscription"
             className="inline-flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
           >
-            Get Pro Access
-          </a>
+            View Plans
+          </Link>
         </div>
       </div>
 
@@ -47,6 +46,4 @@ const BlurredPreview: React.FC<BlurredPreviewProps> = ({ children, requiredSubsc
       </div>
     </div>
   );
-};
-
-export default BlurredPreview;
+}

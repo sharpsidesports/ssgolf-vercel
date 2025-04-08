@@ -112,12 +112,14 @@ export default function Account() {
 
             <div className="mt-8 flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4">
               {(user.subscription_tier === 'free' || !user.subscription_tier) && (
-                <button
-                  onClick={handleUpgrade}
+                <a
+                  href="https://www.winible.com/checkout/1378395472007287051?pid=1378395472019869964"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                 >
                   Upgrade Account
-                </button>
+                </a>
               )}
               
               {user.subscription_tier && user.subscription_tier !== 'free' && (

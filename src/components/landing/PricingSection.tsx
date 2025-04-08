@@ -1,9 +1,5 @@
 import React, { useState } from 'react';
-import { loadStripe } from '@stripe/stripe-js';
-import { createCheckoutSession } from '../../api/stripe/create-checkout-session';
-
-// Initialize Stripe with the environment variable
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
+import { CheckIcon } from '@heroicons/react/24/outline';
 
 interface PricingFeature {
   name: string;
@@ -23,7 +19,7 @@ const features: PricingFeature[] = [
   { name: 'AI Caddie', includedIn: ['pro'] },
   { name: 'Course Fit Tool', includedIn: ['pro'] },
   { name: 'Advanced analytics', includedIn: ['pro'] },
-  { name: 'Priority support', includedIn: ['pro'] },
+  { name: 'Priority support', includedIn: ['pro'] }
 ];
 
 const plans = [
@@ -51,7 +47,12 @@ const plans = [
     },
     buttonText: 'Start Basic Plan',
     buttonStyle: 'text-gray-700 bg-white hover:bg-gray-50',
-    featured: true
+    featured: true,
+    links: {
+      weekly: 'https://www.winible.com/checkout/1438237995290349947?pid=1438237995302932860',
+      monthly: 'https://www.winible.com/checkout/1438237995290349947?pid=1438237995302932861',
+      yearly: 'https://www.winible.com/checkout/1438237995290349947?pid=1438237995302932862'
+    }
   },
   {
     id: 'pro',
@@ -59,57 +60,27 @@ const plans = [
     description: 'Complete suite of professional golf analysis tools',
     price: {
       weekly: '59.99',
-      monthly: '199.99',
-      yearly: '999.99'
+      monthly: '239.99',
+      yearly: '599.99'
     },
     buttonText: 'Start Pro Plan',
     buttonStyle: 'text-white bg-green-500 hover:bg-green-600',
     featured: false,
-    tag: 'Most popular'
+    tag: 'Most popular',
+    links: {
+      weekly: 'https://www.winible.com/checkout/1378395472007287051?pid=1378395472019869964',
+      monthly: 'https://www.winible.com/checkout/1378395472007287051?pid=1378395472019869965',
+      yearly: 'https://www.winible.com/checkout/1378395472007287051?pid=1378395472019869966'
+    }
   }
 ];
 
 export default function PricingSection() {
   const [billingInterval, setBillingInterval] = useState<BillingInterval>('monthly');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleSubscribe = async (plan: string) => {
-    if (plan === 'free') return;
-    
-    try {
-      setLoading(true);
-      setError(null);
-      const session = await createCheckoutSession(plan, billingInterval);
-      const stripe = await stripePromise;
-      
-      if (!stripe) {
-        throw new Error('Failed to load Stripe');
-      }
-
-      const { error } = await stripe.redirectToCheckout({
-        sessionId: session.id,
-      });
-
-      if (error) {
-        throw error;
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      setError(error instanceof Error ? error.message : 'An unexpected error occurred');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className="py-16 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {error && (
-          <div className="mx-auto max-w-4xl mb-8 p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-red-700 text-sm">{error}</p>
-          </div>
-        )}
         <div className="text-center">
           <h2 className="text-base text-green-600 font-semibold tracking-wide uppercase">
             Pricing
@@ -129,7 +100,7 @@ export default function PricingSection() {
             >
               <div className="p-6">
                 {plan.tag && (
-                  <span className="inline-flex px-4 py-1 rounded-full text-sm font-semibold tracking-wide uppercase bg-green-100 text-green-600 mb-4">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                     {plan.tag}
                   </span>
                 )}
@@ -147,15 +118,22 @@ export default function PricingSection() {
                     /{billingInterval}
                   </span>
                 </p>
-                <button
-                  onClick={() => handleSubscribe(plan.id)}
-                  disabled={loading || plan.id === 'free'}
-                  className={`mt-8 block w-full py-3 px-6 border border-transparent rounded-md text-center font-medium ${
-                    plan.buttonStyle
-                  } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                >
-                  {loading ? 'Loading...' : plan.buttonText}
-                </button>
+                {plan.id === 'free' ? (
+                  <button
+                    className={`mt-8 block w-full py-3 px-6 border border-transparent rounded-md text-center font-medium ${plan.buttonStyle}`}
+                  >
+                    {plan.buttonText}
+                  </button>
+                ) : (
+                  <a
+                    href={plan.links?.[billingInterval]}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`mt-8 block w-full py-3 px-6 border border-transparent rounded-md text-center font-medium ${plan.buttonStyle}`}
+                  >
+                    {plan.buttonText}
+                  </a>
+                )}
               </div>
               <div className="px-6 pt-6 pb-8">
                 <ul className="space-y-4">
@@ -169,31 +147,16 @@ export default function PricingSection() {
                         }`}
                       >
                         {included ? (
-                          <svg
+                          <CheckIcon
                             className={`h-6 w-6 ${
                               plan.name === 'Pro' ? 'text-green-400' : 'text-green-500'
                             }`}
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
+                            aria-hidden="true"
+                          />
                         ) : (
-                          <svg
-                            className="h-6 w-6 text-gray-300"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
+                          <div className={`h-6 w-6 rounded-full border ${
+                            plan.name === 'Pro' ? 'border-gray-600' : 'border-gray-300'
+                          }`} />
                         )}
                         <span className="ml-3">{feature.name}</span>
                       </li>

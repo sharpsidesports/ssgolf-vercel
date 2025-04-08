@@ -16,12 +16,14 @@ export default function LandingPage() {
           <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
             Make data-driven decisions with professional-grade golf analytics. From course strategy to player performance, we provide the insights you need to gain a competitive advantage.
           </p>
-          <Link
-            to="/auth"
+          <a
+            href="https://www.winible.com/checkout/1378395472007287051?pid=1378395472019869964"
+            target="_blank"
+            rel="noopener noreferrer"
             className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
           >
             Get started
-          </Link>
+          </a>
         </div>
       </section>
 

@@ -1,15 +1,5 @@
 import { useState } from 'react';
-import { loadStripe } from '@stripe/stripe-js';
 import { CheckIcon } from '@heroicons/react/24/outline';
-import { createCheckoutSession } from '../../api/stripe/create-checkout-session';
-import { useAuthContext } from '../../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
-
-// Initialize Stripe with the environment variable
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
-
-// Log Stripe initialization
-console.log('Stripe publishable key exists:', !!import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 const billingIntervals = [
   { id: 'weekly', name: 'Weekly' },
@@ -66,6 +56,11 @@ const tiers = [
     ],
     cta: 'Start Basic Plan',
     mostPopular: false,
+    links: {
+      weekly: 'https://www.winible.com/checkout/1438237995290349947?pid=1438237995302932860',
+      monthly: 'https://www.winible.com/checkout/1438237995290349947?pid=1438237995302932861',
+      yearly: 'https://www.winible.com/checkout/1438237995290349947?pid=1438237995302932862'
+    }
   },
   {
     id: 'pro',
@@ -79,60 +74,20 @@ const tiers = [
     features: allFeatures,
     cta: 'Start Pro Plan',
     mostPopular: true,
+    links: {
+      weekly: 'https://www.winible.com/checkout/1378395472007287051?pid=1378395472019869964',
+      monthly: 'https://www.winible.com/checkout/1378395472007287051?pid=1378395472019869965',
+      yearly: 'https://www.winible.com/checkout/1378395472007287051?pid=1378395472019869966'
+    }
   },
 ];
 
 export default function PricingPlans() {
   const [selectedInterval, setSelectedInterval] = useState('monthly');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const { user } = useAuthContext();
-  const navigate = useNavigate();
-
-  const handleSubscribe = async (plan: string) => {
-    if (plan === 'free') return;
-    
-    // If user is not authenticated, redirect to auth page
-    if (!user) {
-      // Store the selected plan and interval in sessionStorage
-      sessionStorage.setItem('selectedPlan', JSON.stringify({ plan, interval: selectedInterval }));
-      navigate('/auth');
-      return;
-    }
-    
-    try {
-      setLoading(true);
-      setError(null);
-      const session = await createCheckoutSession(plan, selectedInterval);
-      const stripe = await stripePromise;
-      
-      if (!stripe) {
-        throw new Error('Failed to load Stripe');
-      }
-
-      const { error } = await stripe.redirectToCheckout({
-        sessionId: session.id,
-      });
-
-      if (error) {
-        throw error;
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      setError(error instanceof Error ? error.message : 'An unexpected error occurred');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className="bg-white py-24">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        {error && (
-          <div className="mx-auto max-w-4xl mb-8 p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-red-700 text-sm">{error}</p>
-          </div>
-        )}
         <div className="mx-auto max-w-4xl text-center">
           <h2 className="text-base font-semibold leading-7 text-green-600">Pricing</h2>
           <p className="mt-2 text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
@@ -196,17 +151,33 @@ export default function PricingPlans() {
                   /{selectedInterval}
                 </span>
               </p>
-              <button
-                onClick={() => handleSubscribe(tier.id)}
-                disabled={loading || tier.id === 'free'}
-                className={`mt-4 block w-full rounded-md px-3 py-2 text-center text-sm font-semibold leading-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
-                  tier.mostPopular
-                    ? 'bg-green-500 text-white shadow-sm hover:bg-green-400 focus-visible:outline-green-500'
-                    : 'bg-white text-green-600 ring-1 ring-inset ring-green-200 hover:ring-green-300'
-                } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-              >
-                {loading ? 'Loading...' : tier.cta}
-              </button>
+              {tier.id === 'free' ? (
+                <a
+                  href="https://www.winible.com/checkout/1378395472007287051?pid=1378395472019869964"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`mt-4 block w-full rounded-md px-3 py-2 text-center text-sm font-semibold leading-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
+                    tier.mostPopular
+                      ? 'bg-green-500 text-white shadow-sm hover:bg-green-400 focus-visible:outline-green-500'
+                      : 'bg-white text-green-600 ring-1 ring-inset ring-green-200 hover:ring-green-300'
+                  }`}
+                >
+                  {tier.cta}
+                </a>
+              ) : (
+                <a
+                  href={tier.links?.[selectedInterval as keyof typeof tier.links]}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`mt-4 block w-full rounded-md px-3 py-2 text-center text-sm font-semibold leading-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
+                    tier.mostPopular
+                      ? 'bg-green-500 text-white shadow-sm hover:bg-green-400 focus-visible:outline-green-500'
+                      : 'bg-white text-green-600 ring-1 ring-inset ring-green-200 hover:ring-green-300'
+                  }`}
+                >
+                  {tier.cta}
+                </a>
+              )}
               <ul
                 role="list"
                 className={`mt-6 space-y-2 text-sm leading-6 ${
